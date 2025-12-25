@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我们一起记单词</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #4a6fa5 0%, #1665c1 100%);
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .subtitle span {
+            font-weight: bold;
+            color: #ffd700;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+
+        .training-mode {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        main {
+            padding: 30px;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .card-content {
+            text-align: center;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .word-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kana-display {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+        }
+
+        .answer-input-container {
+            margin: 30px 0;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.8rem;
+            text-align: center;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .answer-input:focus {
+            border-color: white;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .answer-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .check-answer-btn {
+            margin-top: 15px;
+            padding: 12px 30px;
+            background-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .check-answer-btn:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .part-of-speech {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .meaning-display {
+            font-size: 2.2rem;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
+        .hint {
+            margin-top: 30px;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        .hint strong {
+            color: #ffd700;
+        }
+
+        .card-number {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 5px 12px;
+            border-radius: 15px;
+        }
+
+        .result-message {
+            font-size: 1.4rem;
+            margin-top: 20px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .correct {
+            background-color: rgba(76, 175, 80, 0.3);
+            color: #c8e6c9;
+        }
+
+        .incorrect {
+            background-color: rgba(244, 67, 54, 0.3);
+            color: #ffcdd2;
+        }
+
+        .progress-container {
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 50px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .control-btn {
+            background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            min-width: 140px;
+        }
+
+        .mastery-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .mastery-btn {
+            min-width: 120px;
+        }
+
+        .difficulty-btn {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+        }
+
+        .mastery-btn-active {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            color: white;
+        }
+
+        .mode-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            background: linear-gradient(to right, #8e9eab, #eef2f3);
+            color: #333;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: 2px solid transparent;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(to right, #4a6fa5, #6a93cb);
+            color: white;
+            border-color: #4a6fa5;
+        }
+
+        .additional-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .secondary-btn {
+            background: linear-gradient(to right, #8e9eab, #eef2f3);
+            color: #333;
+            padding: 12px 24px;
+            font-size: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: white;
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6fa5 100%);
+            font-size: 1rem;
+        }
+
+        /* 单词列表模态框样式 */
+        .word-list-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 0 auto;
+            width: 90%;
+            max-width: 1000px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            background: linear-gradient(to right, #4a6fa5, #6a93cb);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2.5rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: transform 0.2s;
+        }
+
+        .close-modal:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid #4a6fa5;
+            background-color: white;
+            color: #4a6fa5;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background-color: #4a6fa5;
+            color: white;
+        }
+
+        .filter-btn:hover:not(.active) {
+            background-color: #eef5ff;
+        }
+
+        .word-list-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+            color: #495057;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-new {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-learning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-mastered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .list-action-btn {
+            padding: 5px 10px;
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.3s;
+        }
+
+        .list-action-btn:hover {
+            background-color: #3a5a80;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .subtitle {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .card {
+                height: 350px;
+            }
+            
+            .word-display {
+                font-size: 3rem;
+                min-height: 80px;
+            }
+            
+            .kana-display {
+                font-size: 2rem;
+            }
+            
+            .answer-input {
+                font-size: 1.5rem;
+                padding: 12px;
+            }
+            
+            .meaning-display {
+                font-size: 1.8rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .mastery-controls {
+                order: 1;
+                width: 100%;
+            }
+            
+            .control-btn {
+                order: 2;
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10px auto;
+            }
+            
+            table {
+                font-size: 0.85rem;
+            }
+            
+            th, td {
+                padding: 10px 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .word-display {
+                font-size: 2.5rem;
+                min-height: 70px;
+            }
+            
+            .kana-display {
+                font-size: 1.8rem;
+            }
+            
+            .answer-input {
+                font-size: 1.3rem;
+            }
+            
+            .meaning-display {
+                font-size: 1.5rem;
+            }
+            
+            .card {
+                height: 320px;
+            }
+            
+            .mode-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .mode-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-language"></i> 我们一起记单词2.0</h1>
+            <p class="subtitle">
+                共 <span id="total-count">128</span> 个单词 | 
+                已掌握: <span id="mastered-count">0</span> | 
+                学习中: <span id="learning-count">0</span> | 
+                未学习: <span id="new-count">129</span>
+            </p>
+            <div class="training-mode">
+                <i class="fas fa-brain"></i> 训练模式: 看到汉字，回忆假名
+            </div>
+        </header>
+
+        <main>
+            <div class="mode-controls">
+                <button id="practice-mode-btn" class="btn mode-btn active">
+                    <i class="fas fa-pencil-alt"></i> 练习模式 (输入答案)
+                </button>
+                <button id="review-mode-btn" class="btn mode-btn">
+                    <i class="fas fa-eye"></i> 复习模式 (直接查看)
+                </button>
+            </div>
+
+            <div class="card-container">
+                <div class="card" id="flashcard">
+                    <div class="card-front">
+                        <div class="card-content">
+                            <div class="word-display" id="word-front">漢字</div>
+                            <div class="part-of-speech" id="part-of-speech-front">〔名〕</div>
+                            <div class="answer-input-container" id="practice-container">
+                                <input type="text" class="answer-input" id="answer-input" 
+                                       placeholder="请输入假名（平假名）" autocomplete="off">
+                                <button class="check-answer-btn" id="check-answer-btn">
+                                    <i class="fas fa-check"></i> 检查答案
+                                </button>
+                            </div>
+                            <div class="hint">
+                                <strong>训练目标：</strong>看到汉字，回忆并输入对应的假名
+                            </div>
+                        </div>
+                        <div class="card-number">
+                            <span id="current-index">1</span> / <span id="total-words">129</span>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-content">
+                            <div class="word-display" id="word-back">漢字</div>
+                            <div class="kana-display" id="kana-back">かんじ</div>
+                            <div class="part-of-speech" id="part-of-speech-back">〔名〕</div>
+                            <div class="meaning-display" id="meaning-text">汉字</div>
+                            <div class="result-message" id="result-message"></div>
+                        </div>
+                        <div class="card-number">
+                            <span id="current-index-back">1</span> / <span id="total-words-back">129</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>学习进度: <span id="progress-percent">0</span>%</span>
+                        <span>当前单词: <span id="current-word-number">1</span>/129</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="prev-btn" class="btn control-btn">
+                    <i class="fas fa-arrow-left"></i> 上一个
+                </button>
+                
+                <div class="mastery-controls">
+                    <button id="again-btn" class="btn mastery-btn difficulty-btn" data-difficulty="again">
+                        <i class="fas fa-redo"></i> 困难
+                    </button>
+                    <button id="hard-btn" class="btn mastery-btn difficulty-btn" data-difficulty="hard">
+                        <i class="fas fa-question-circle"></i> 一般
+                    </button>
+                    <button id="easy-btn" class="btn mastery-btn difficulty-btn" data-difficulty="easy">
+                        <i class="fas fa-check-circle"></i> 简单
+                    </button>
+                    <button id="master-btn" class="btn mastery-btn mastery-btn-active">
+                        <i class="fas fa-star"></i> 已掌握
+                    </button>
+                </div>
+                
+                <button id="next-btn" class="btn control-btn">
+                    下一个 <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <div class="additional-controls">
+                <button id="show-answer-btn" class="btn secondary-btn">
+                    <i class="fas fa-lightbulb"></i> 显示答案
+                </button>
+                <button id="shuffle-btn" class="btn secondary-btn">
+                    <i class="fas fa-random"></i> 随机排序
+                </button>
+                <button id="reset-btn" class="btn secondary-btn">
+                    <i class="fas fa-undo"></i> 重置进度
+                </button>
+                <button id="flip-btn" class="btn secondary-btn">
+                    <i class="fas fa-sync-alt"></i> 翻转卡片
+                </button>
+                <button id="list-btn" class="btn secondary-btn">
+                    <i class="fas fa-list"></i> 查看单词列表
+                </button>
+            </div>
+        </main>
+
+        <div class="word-list-modal" id="word-list-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>日语单词列表 (129个)</h2>
+                    <button class="close-modal" id="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="filter-controls">
+                        <button class="filter-btn active" data-filter="all">全部 (<span id="count-all">129</span>)</button>
+                        <button class="filter-btn" data-filter="new">未学习 (<span id="count-new">129</span>)</button>
+                        <button class="filter-btn" data-filter="learning">学习中 (<span id="count-learning-modal">0</span>)</button>
+                        <button class="filter-btn" data-filter="mastered">已掌握 (<span id="count-mastered-modal">0</span>)</button>
+                    </div>
+                    <div class="word-list-container">
+                        <table id="word-list-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>汉字</th>
+                                    <th>假名</th>
+                                    <th>词性</th>
+                                    <th>释义</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="word-list-body">
+                                <!-- 单词列表将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>日语学习工具 | 汉字→假名记忆训练 | 使用主动回忆法高效记忆</p>
+    </footer>
+
+    <script>
+        // 日语单词数据 - 基于你提供的128个单词
+        const japaneseWords = [
+            { word: "中国", kana: "ちゅうごく", partOfSpeech: "〔名〕", meaning: "中国" },
+            { word: "学生", kana: "がくせい", partOfSpeech: "〔名〕", meaning: "（大）学生" },
+            { word: "先生", kana: "せんせい", partOfSpeech: "〔名〕", meaning: "老师" },
+            { word: "会社員", kana: "かいしゃいん", partOfSpeech: "〔名〕", meaning: "公司职员" },
+            { word: "大学", kana: "だいがく", partOfSpeech: "〔名〕", meaning: "大学" },
+            { word: "父", kana: "ちち", partOfSpeech: "〔名〕", meaning: "（我）父亲" },
+            { word: "本", kana: "ほん", partOfSpeech: "〔名〕", meaning: "书" },
+            { word: "靴", kana: "くつ", partOfSpeech: "〔名〕", meaning: "鞋" },
+            { word: "新聞", kana: "しんぶん", partOfSpeech: "〔名〕", meaning: "报纸" },
+            { word: "雑誌", kana: "ざっし", partOfSpeech: "〔名〕", meaning: "杂志" },
+            { word: "辞書", kana: "じしょ", partOfSpeech: "〔名〕", meaning: "词典" },
+            { word: "電話", kana: "でんわ", partOfSpeech: "〔名〕", meaning: "电话" },
+            { word: "時計", kana: "とけい", partOfSpeech: "〔名〕", meaning: "钟，表" },
+            { word: "写真", kana: "しゃしん", partOfSpeech: "〔名〕", meaning: "照片" },
+            { word: "車", kana: "くるま", partOfSpeech: "〔名〕", meaning: "车" },
+            { word: "自転車", kana: "じてんしゃ", partOfSpeech: "〔名〕", meaning: "自行车" },
+            { word: "人", kana: "ひと", partOfSpeech: "〔名〕", meaning: "人" },
+            { word: "家族", kana: "かぞく", partOfSpeech: "〔名〕", meaning: "家人，家属" },
+            { word: "母", kana: "はは", partOfSpeech: "〔名〕", meaning: "（我）母亲" },
+            { word: "日本", kana: "にほん", partOfSpeech: "〔专〕", meaning: "日本" },
+            { word: "食堂", kana: "しょくどう", partOfSpeech: "〔名〕", meaning: "食堂" },
+            { word: "銀行", kana: "ぎんこう", partOfSpeech: "〔名〕", meaning: "银行" },
+            { word: "病院", kana: "びょういん", partOfSpeech: "〔名〕", meaning: "医院" },
+            { word: "建物", kana: "たてもの", partOfSpeech: "〔名〕", meaning: "大楼，建筑物" },
+            { word: "服", kana: "ふく", partOfSpeech: "〔名〕", meaning: "衣服" },
+            { word: "国", kana: "くに", partOfSpeech: "〔名〕", meaning: "国，国家" },
+            { word: "地図", kana: "ちず", partOfSpeech: "〔名〕", meaning: "地图" },
+            { word: "今日", kana: "きょう", partOfSpeech: "〔名〕", meaning: "今天" },
+            { word: "水曜日", kana: "すいようび", partOfSpeech: "〔名〕", meaning: "星期三" },
+            { word: "木曜日", kana: "もくようび", partOfSpeech: "〔名〕", meaning: "星期四" },
+            { word: "部屋", kana: "へや", partOfSpeech: "〔名〕", meaning: "房间，屋子" },
+            { word: "庭", kana: "にわ", partOfSpeech: "〔名〕", meaning: "院子" },
+            { word: "壁", kana: "かべ", partOfSpeech: "〔名〕", meaning: "墙壁" },
+            { word: "猫", kana: "ねこ", partOfSpeech: "〔名〕", meaning: "猫" },
+            { word: "犬", kana: "いぬ", partOfSpeech: "〔名〕", meaning: "狗" },
+            { word: "箱", kana: "はこ", partOfSpeech: "〔名〕", meaning: "盒子，箱子" },
+            { word: "兄弟", kana: "きょうだい", partOfSpeech: "〔名〕", meaning: "兄弟姐妹" },
+            { word: "両親", kana: "りょうしん", partOfSpeech: "〔名〕", meaning: "父母，双亲" },
+            { word: "妹", kana: "いもうと", partOfSpeech: "〔名〕", meaning: "妹妹" },
+            { word: "男", kana: "おとこ", partOfSpeech: "〔名〕", meaning: "男" },
+            { word: "女", kana: "おんな", partOfSpeech: "〔名〕", meaning: "女" },
+            { word: "場所", kana: "ばしょ", partOfSpeech: "〔名〕", meaning: "所在地，地方，场所" },
+            { word: "教室", kana: "きょうしつ", partOfSpeech: "〔名〕", meaning: "教室" },
+            { word: "公園", kana: "こうえん", partOfSpeech: "〔名〕", meaning: "公园" },
+            { word: "駅", kana: "えき", partOfSpeech: "〔名〕", meaning: "车站" },
+            { word: "地下鉄", kana: "ちかてつ", partOfSpeech: "〔名〕", meaning: "地铁" },
+            { word: "今", kana: "いま", partOfSpeech: "〔名〕", meaning: "现在" },
+            { word: "朝", kana: "あさ", partOfSpeech: "〔名〕", meaning: "早晨" },
+            { word: "学校", kana: "がっこう", partOfSpeech: "〔名〕", meaning: "学校" },
+            { word: "試験", kana: "しけん", partOfSpeech: "〔名〕", meaning: "考试" },
+            { word: "仕事", kana: "しごと", partOfSpeech: "〔名〕", meaning: "工作" },
+            { word: "休み", kana: "やすみ", partOfSpeech: "〔名〕", meaning: "休息" },
+            { word: "出張", kana: "しゅっちょう", partOfSpeech: "〔名〕", meaning: "出差" },
+            { word: "旅行", kana: "りょこう", partOfSpeech: "〔名〕", meaning: "旅行" },
+            { word: "勉強します", kana: "べんきょうします", partOfSpeech: "〔动3〕", meaning: "学习" },
+            { word: "誕生日", kana: "たんじょうび", partOfSpeech: "〔名〕", meaning: "生日" },
+            { word: "夏休み", kana: "なつやすみ", partOfSpeech: "〔名〕", meaning: "暑假" },
+            { word: "飛行機", kana: "ひこうき", partOfSpeech: "〔名〕", meaning: "飞机" },
+            { word: "電車", kana: "でんしゃ", partOfSpeech: "〔名〕", meaning: "电车" },
+            { word: "友達", kana: "ともだち", partOfSpeech: "〔名〕", meaning: "朋友" },
+            { word: "弟", kana: "おとうと", partOfSpeech: "〔名〕", meaning: "弟弟" },
+            { word: "昼ご飯", kana: "ひるごはん", partOfSpeech: "〔名〕", meaning: "午饭" },
+            { word: "お弁当", kana: "おべんとう", partOfSpeech: "〔名〕", meaning: "盒饭" },
+            { word: "手紙", kana: "てがみ", partOfSpeech: "〔名〕", meaning: "信" },
+            { word: "音楽", kana: "おんがく", partOfSpeech: "〔名〕", meaning: "音乐" },
+            { word: "映画", kana: "えいが", partOfSpeech: "〔名〕", meaning: "电影" },
+            { word: "花", kana: "はな", partOfSpeech: "〔名〕", meaning: "花" },
+            { word: "お金", kana: "おかね", partOfSpeech: "〔名〕", meaning: "钱，金钱" },
+            { word: "宿題", kana: "しゅくだい", partOfSpeech: "〔名〕", meaning: "作业" },
+            { word: "住所", kana: "じゅうしょ", partOfSpeech: "〔名〕", meaning: "住址" },
+            { word: "料理", kana: "りょうり", partOfSpeech: "〔名〕", meaning: "菜肴，饭菜" },
+            { word: "水", kana: "みず", partOfSpeech: "〔名〕", meaning: "水，凉水" },
+            { word: "薬", kana: "くすり", partOfSpeech: "〔名〕", meaning: "药" },
+            { word: "天気", kana: "てんき", partOfSpeech: "〔名〕", meaning: "天气" },
+            { word: "海", kana: "うみ", partOfSpeech: "〔名〕", meaning: "大海" },
+            { word: "山", kana: "やま", partOfSpeech: "〔名〕", meaning: "山" },
+            { word: "紙", kana: "かみ", partOfSpeech: "〔名〕", meaning: "纸" },
+            { word: "女性", kana: "じょせい", partOfSpeech: "〔名〕", meaning: "女性" },
+            { word: "気持ち", kana: "きもち", partOfSpeech: "〔名〕", meaning: "心情" },
+            { word: "町", kana: "まち", partOfSpeech: "〔名〕", meaning: "城市，街道" },
+            { word: "平日", kana: "へいじつ", partOfSpeech: "〔名〕", meaning: "平日，非休息日" },
+            { word: "生活", kana: "せいかつ", partOfSpeech: "〔名〕", meaning: "生活" },
+            { word: "世界", kana: "せかい", partOfSpeech: "〔名〕", meaning: "世界" },
+            { word: "雨", kana: "あめ", partOfSpeech: "〔名〕", meaning: "雨，下雨" },
+            { word: "雪", kana: "ゆき", partOfSpeech: "〔名〕", meaning: "雪" },
+            { word: "有名", kana: "ゆうめい", partOfSpeech: "〔形2〕", meaning: "有名" },
+            { word: "親切", kana: "しんせつ", partOfSpeech: "〔形2〕", meaning: "热情" },
+            { word: "簡単", kana: "かんたん", partOfSpeech: "〔形2〕", meaning: "简单" },
+            { word: "歌", kana: "うた", partOfSpeech: "〔名〕", meaning: "歌，歌曲" },
+            { word: "英語", kana: "えいご", partOfSpeech: "〔名〕", meaning: "英语" },
+            { word: "肉", kana: "にく", partOfSpeech: "〔名〕", meaning: "肉" },
+            { word: "野菜", kana: "やさい", partOfSpeech: "〔名〕", meaning: "蔬菜" },
+            { word: "窓", kana: "まど", partOfSpeech: "〔名〕", meaning: "窗，窗户" },
+            { word: "外国", kana: "がいこく", partOfSpeech: "〔名〕", meaning: "外国" },
+            { word: "散歩します", kana: "さんぽします", partOfSpeech: "〔动3〕", meaning: "散步" },
+            { word: "上手", kana: "じょうず", partOfSpeech: "〔形2〕", meaning: "擅长，高明，水平高" },
+            { word: "下手", kana: "へた", partOfSpeech: "〔形2〕", meaning: "不高明，水平低" },
+            { word: "苦手", kana: "にがて", partOfSpeech: "〔形2〕", meaning: "不擅长，不善于" },
+            { word: "季節", kana: "きせつ", partOfSpeech: "〔名〕", meaning: "季节" },
+            { word: "冬", kana: "ふゆ", partOfSpeech: "〔名〕", meaning: "冬天，冬季" },
+            { word: "春", kana: "はる", partOfSpeech: "〔名〕", meaning: "春天，春季" },
+            { word: "人気", kana: "にんき", partOfSpeech: "〔名〕", meaning: "声望，受欢迎" },
+            { word: "兄", kana: "あに", partOfSpeech: "〔名〕", meaning: "哥哥，兄长" },
+            { word: "荷物", kana: "にもつ", partOfSpeech: "〔名〕", meaning: "包裹" },
+            { word: "切手", kana: "きって", partOfSpeech: "〔名〕", meaning: "邮票" },
+            { word: "髪", kana: "かみ", partOfSpeech: "〔名〕", meaning: "头发" },
+            { word: "昼", kana: "ひる", partOfSpeech: "〔名〕", meaning: "白天，中午" },
+            { word: "橋", kana: "はし", partOfSpeech: "〔名〕", meaning: "桥，桥梁" },
+            { word: "右", kana: "みぎ", partOfSpeech: "〔名〕", meaning: "右，右边" },
+            { word: "左", kana: "ひだり", partOfSpeech: "〔名〕", meaning: "左，左边" },
+            { word: "道", kana: "みち", partOfSpeech: "〔名〕", meaning: "路，道路" },
+            { word: "電気", kana: "でんき", partOfSpeech: "〔名〕", meaning: "电，电力" },
+            { word: "風邪", kana: "かぜ", partOfSpeech: "〔名〕", meaning: "感冒" },
+            { word: "熱", kana: "ねつ", partOfSpeech: "〔名〕", meaning: "发烧，体温" },
+            { word: "お風呂", kana: "おふろ", partOfSpeech: "〔名〕", meaning: "澡堂，浴室" },
+            { word: "大丈夫", kana: "だいじょうぶ", partOfSpeech: "〔形2〕", meaning: "没关系，放心" },
+            { word: "財布", kana: "さいふ", partOfSpeech: "〔名〕", meaning: "钱包" },
+            { word: "緑", kana: "みどり", partOfSpeech: "〔名〕", meaning: "绿，绿色" },
+            { word: "足", kana: "あし", partOfSpeech: "〔名〕", meaning: "脚" },
+            { word: "指", kana: "ゆび", partOfSpeech: "〔名〕", meaning: "手指，指头" },
+            { word: "目", kana: "め", partOfSpeech: "〔名〕", meaning: "眼，眼睛" },
+            { word: "鼻", kana: "はな", partOfSpeech: "〔名〕", meaning: "鼻，鼻子" },
+            { word: "顔", kana: "かお", partOfSpeech: "〔名〕", meaning: "脸，颜面" },
+            { word: "頭", kana: "あたま", partOfSpeech: "〔名〕", meaning: "头，头脑" },
+            { word: "問題", kana: "もんだい", partOfSpeech: "〔名〕", meaning: "问题" },
+            { word: "横", kana: "よこ", partOfSpeech: "〔名〕", meaning: "旁边，侧面" },
+            { word: "派手", kana: "はで", partOfSpeech: "〔形2〕", meaning: "耀眼，花哨" },
+            { word: "大切", kana: "たいせつ", partOfSpeech: "〔形2〕", meaning: "重要，珍贵" }
+        ];
+
+        // 初始化变量
+        let words = [...japaneseWords];
+        let currentIndex = 0;
+        let masteredWords = JSON.parse(localStorage.getItem('masteredJapaneseWords')) || [];
+        let learningProgress = JSON.parse(localStorage.getItem('japaneseLearningProgress')) || {};
+        let isShuffled = false;
+        let isPracticeMode = true; // 练习模式或复习模式
+
+        // DOM元素
+        const flashcard = document.getElementById('flashcard');
+        const wordFront = document.getElementById('word-front');
+        const partOfSpeechFront = document.getElementById('part-of-speech-front');
+        const wordBack = document.getElementById('word-back');
+        const kanaBack = document.getElementById('kana-back');
+        const partOfSpeechBack = document.getElementById('part-of-speech-back');
+        const meaningText = document.getElementById('meaning-text');
+        const answerInput = document.getElementById('answer-input');
+        const checkAnswerBtn = document.getElementById('check-answer-btn');
+        const practiceContainer = document.getElementById('practice-container');
+        const resultMessage = document.getElementById('result-message');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+        
+        const currentIndexElement = document.getElementById('current-index');
+        const currentIndexBackElement = document.getElementById('current-index-back');
+        const totalWordsElement = document.getElementById('total-words');
+        const totalWordsBackElement = document.getElementById('total-words-back');
+        const currentWordNumberElement = document.getElementById('current-word-number');
+        const totalCountElement = document.getElementById('total-count');
+        const masteredCountElement = document.getElementById('mastered-count');
+        const learningCountElement = document.getElementById('learning-count');
+        const newCountElement = document.getElementById('new-count');
+        const progressFillElement = document.getElementById('progress-fill');
+        const progressPercentElement = document.getElementById('progress-percent');
+        
+        // 按钮元素
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const flipBtn = document.getElementById('flip-btn');
+        const shuffleBtn = document.getElementById('shuffle-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const listBtn = document.getElementById('list-btn');
+        const againBtn = document.getElementById('again-btn');
+        const hardBtn = document.getElementById('hard-btn');
+        const easyBtn = document.getElementById('easy-btn');
+        const masterBtn = document.getElementById('master-btn');
+        const practiceModeBtn = document.getElementById('practice-mode-btn');
+        const reviewModeBtn = document.getElementById('review-mode-btn');
+        
+        // 模态框元素
+        const wordListModal = document.getElementById('word-list-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const wordListBody = document.getElementById('word-list-body');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const countAllElement = document.getElementById('count-all');
+        const countNewElement = document.getElementById('count-new');
+        const countLearningModalElement = document.getElementById('count-learning-modal');
+        const countMasteredModalElement = document.getElementById('count-mastered-modal');
+
+        // 初始化
+        function init() {
+            updateWordCounts();
+            updateCard();
+            updateProgress();
+            
+            // 设置事件监听器
+            setupEventListeners();
+            
+            // 聚焦输入框
+            if (isPracticeMode) {
+                answerInput.focus();
+            }
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 卡片点击翻转
+            flashcard.addEventListener('click', function(e) {
+                // 只有在复习模式或点击非输入区域时才翻转
+                if (!isPracticeMode || !e.target.closest('.answer-input-container')) {
+                    flipCard();
+                }
+            });
+            
+            flipBtn.addEventListener('click', flipCard);
+            
+            // 输入框相关
+            answerInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+            
+            checkAnswerBtn.addEventListener('click', checkAnswer);
+            showAnswerBtn.addEventListener('click', showAnswer);
+            
+            // 导航按钮
+            prevBtn.addEventListener('click', showPrevWord);
+            nextBtn.addEventListener('click', showNextWord);
+            
+            // 学习状态按钮
+            againBtn.addEventListener('click', () => setWordDifficulty('again'));
+            hardBtn.addEventListener('click', () => setWordDifficulty('hard'));
+            easyBtn.addEventListener('click', () => setWordDifficulty('easy'));
+            masterBtn.addEventListener('click', () => setWordDifficulty('mastered'));
+            
+            // 模式切换
+            practiceModeBtn.addEventListener('click', () => switchMode(true));
+            reviewModeBtn.addEventListener('click', () => switchMode(false));
+            
+            // 其他控制按钮
+            shuffleBtn.addEventListener('click', shuffleWords);
+            resetBtn.addEventListener('click', resetProgress);
+            listBtn.addEventListener('click', showWordList);
+            closeModalBtn.addEventListener('click', hideWordList);
+            
+            // 点击模态框外部关闭
+            wordListModal.addEventListener('click', (e) => {
+                if (e.target === wordListModal) {
+                    hideWordList();
+                }
+            });
+            
+            // 过滤按钮
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const filter = button.getAttribute('data-filter');
+                    filterWordList(filter);
+                });
+            });
+            
+            // 键盘快捷键
+            document.addEventListener('keydown', handleKeydown);
+        }
+
+        // 处理键盘快捷键
+        function handleKeydown(e) {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    showPrevWord();
+                    break;
+                case 'ArrowRight':
+                    showNextWord();
+                    break;
+                case ' ':
+                case 'Enter':
+                    if (!isPracticeMode || e.target !== answerInput) {
+                        e.preventDefault();
+                        flipCard();
+                    }
+                    break;
+                case '1':
+                    setWordDifficulty('again');
+                    break;
+                case '2':
+                    setWordDifficulty('hard');
+                    break;
+                case '3':
+                    setWordDifficulty('easy');
+                    break;
+                case '4':
+                    setWordDifficulty('mastered');
+                    break;
+                case 'Escape':
+                    hideWordList();
+                    break;
+                case 'Tab':
+                    // 阻止Tab键切换焦点，保持输入框焦点
+                    if (isPracticeMode && document.activeElement !== answerInput) {
+                        e.preventDefault();
+                        answerInput.focus();
+                    }
+                    break;
+            }
+        }
+
+        // 翻转卡片
+        function flipCard() {
+            flashcard.classList.toggle('flipped');
+        }
+
+        // 切换学习模式
+        function switchMode(isPractice) {
+            isPracticeMode = isPractice;
+            
+            if (isPracticeMode) {
+                practiceModeBtn.classList.add('active');
+                reviewModeBtn.classList.remove('active');
+                practiceContainer.style.display = 'block';
+                showAnswerBtn.style.display = 'flex';
+                answerInput.focus();
+            } else {
+                practiceModeBtn.classList.remove('active');
+                reviewModeBtn.classList.add('active');
+                practiceContainer.style.display = 'none';
+                showAnswerBtn.style.display = 'none';
+            }
+            
+            // 确保卡片显示正面
+            flashcard.classList.remove('flipped');
+            clearResultMessage();
+            answerInput.value = '';
+        }
+
+        // 更新卡片内容
+        function updateCard() {
+            const currentWord = words[currentIndex];
+            
+            // 更新正面（只显示汉字和词性）
+            wordFront.textContent = currentWord.word;
+            partOfSpeechFront.textContent = currentWord.partOfSpeech;
+            
+            // 更新背面（显示假名、词性和释义）
+            wordBack.textContent = currentWord.word;
+            kanaBack.textContent = currentWord.kana;
+            partOfSpeechBack.textContent = currentWord.partOfSpeech;
+            meaningText.textContent = currentWord.meaning;
+            
+            // 更新索引显示
+            currentIndexElement.textContent = currentIndex + 1;
+            currentIndexBackElement.textContent = currentIndex + 1;
+            currentWordNumberElement.textContent = currentIndex + 1;
+            totalWordsElement.textContent = words.length;
+            totalWordsBackElement.textContent = words.length;
+            
+            // 确保卡片显示正面
+            flashcard.classList.remove('flipped');
+            
+            // 清空输入框和结果信息
+            answerInput.value = '';
+            clearResultMessage();
+            
+            // 更新按钮状态
+            updateMasteryButton();
+            
+            // 如果是练习模式，聚焦输入框
+            if (isPracticeMode) {
+                setTimeout(() => {
+                    answerInput.focus();
+                }, 100);
+            }
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim();
+            const correctAnswer = words[currentIndex].kana;
+            
+            // 清空之前的结果信息
+            clearResultMessage();
+            
+            if (userAnswer === correctAnswer) {
+                // 答案正确
+                resultMessage.textContent = "✓ 正确！";
+                resultMessage.className = "result-message correct";
+                resultMessage.style.display = 'block';
+                
+                // 自动翻转卡片显示正确答案
+                setTimeout(() => {
+                    flashcard.classList.add('flipped');
+                }, 500);
+                
+                // 自动标记为"简单"或"已掌握"（根据当前状态）
+                const currentWordKey = words[currentIndex].word;
+                const currentStatus = learningProgress[currentWordKey] || 'new';
+                
+                if (currentStatus === 'new' || currentStatus === 'again' || currentStatus === 'hard') {
+                    // 首次答对，标记为"简单"
+                    setWordDifficulty('easy');
+                }
+            } else {
+                // 答案错误
+                resultMessage.textContent = `✗ 错误！正确答案是: ${correctAnswer}`;
+                resultMessage.className = "result-message incorrect";
+                resultMessage.style.display = 'block';
+                
+                // 标记为"困难"或"一般"
+                const currentWordKey = words[currentIndex].word;
+                const currentStatus = learningProgress[currentWordKey] || 'new';
+                
+                if (currentStatus === 'new' || currentStatus === 'easy') {
+                    setWordDifficulty('again');
+                }
+            }
+        }
+
+        // 显示答案
+        function showAnswer() {
+            answerInput.value = words[currentIndex].kana;
+            checkAnswer();
+        }
+
+        // 清空结果信息
+        function clearResultMessage() {
+            resultMessage.style.display = 'none';
+            resultMessage.textContent = '';
+        }
+
+        // 更新掌握状态按钮
+        function updateMasteryButton() {
+            const currentWordKey = words[currentIndex].word;
+            const status = learningProgress[currentWordKey] || 'new';
+            
+            // 重置所有按钮
+            againBtn.classList.remove('mastery-btn-active');
+            hardBtn.classList.remove('mastery-btn-active');
+            easyBtn.classList.remove('mastery-btn-active');
+            masterBtn.classList.remove('mastery-btn-active');
+            
+            // 激活当前状态按钮
+            switch(status) {
+                case 'again':
+                    againBtn.classList.add('mastery-btn-active');
+                    break;
+                case 'hard':
+                    hardBtn.classList.add('mastery-btn-active');
+                    break;
+                case 'easy':
+                    easyBtn.classList.add('mastery-btn-active');
+                    break;
+                case 'mastered':
+                    masterBtn.classList.add('mastery-btn-active');
+                    break;
+            }
+        }
+
+        // 显示上一个单词
+        function showPrevWord() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        // 显示下一个单词
+        function showNextWord() {
+            if (currentIndex < words.length - 1) {
+                currentIndex++;
+                updateCard();
+            }
+        }
+
+        // 设置单词难度/掌握状态
+        function setWordDifficulty(difficulty) {
+            const currentWordKey = words[currentIndex].word;
+            learningProgress[currentWordKey] = difficulty;
+            
+            // 如果是"已掌握"，添加到已掌握列表
+            if (difficulty === 'mastered' && !masteredWords.includes(currentWordKey)) {
+                masteredWords.push(currentWordKey);
+            } else if (difficulty !== 'mastered') {
+                // 如果不是"已掌握"，从已掌握列表中移除
+                const index = masteredWords.indexOf(currentWordKey);
+                if (index > -1) {
+                    masteredWords.splice(index, 1);
+                }
+            }
+            
+            // 保存到本地存储
+            localStorage.setItem('japaneseLearningProgress', JSON.stringify(learningProgress));
+            localStorage.setItem('masteredJapaneseWords', JSON.stringify(masteredWords));
+            
+            // 更新UI
+            updateMasteryButton();
+            updateWordCounts();
+            updateProgress();
+            
+            // 如果是练习模式且标记为已掌握，自动显示下一个单词
+            if (difficulty === 'mastered' && currentIndex < words.length - 1) {
+                setTimeout(() => {
+                    showNextWord();
+                }, 800);
+            }
+        }
+
+        // 随机排序单词
+        function shuffleWords() {
+            isShuffled = !isShuffled;
+            
+            if (isShuffled) {
+                // 随机排序
+                for (let i = words.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [words[i], words[j]] = [words[j], words[i]];
+                }
+                shuffleBtn.innerHTML = '<i class="fas fa-sort-amount-down"></i> 恢复顺序';
+                shuffleBtn.style.background = 'linear-gradient(to right, #FF8C00, #FFA500)';
+            } else {
+                // 恢复原始顺序
+                words = [...japaneseWords];
+                shuffleBtn.innerHTML = '<i class="fas fa-random"></i> 随机排序';
+                shuffleBtn.style.background = '';
+            }
+            
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // 重置学习进度
+        function resetProgress() {
+            if (confirm('确定要重置所有学习进度吗？这将清除所有已保存的数据。')) {
+                learningProgress = {};
+                masteredWords = [];
+                localStorage.removeItem('japaneseLearningProgress');
+                localStorage.removeItem('masteredJapaneseWords');
+                
+                // 恢复原始顺序
+                isShuffled = false;
+                words = [...japaneseWords];
+                shuffleBtn.innerHTML = '<i class="fas fa-random"></i> 随机排序';
+                shuffleBtn.style.background = '';
+                
+                currentIndex = 0;
+                updateCard();
+                updateWordCounts();
+                updateProgress();
+                updateMasteryButton();
+            }
+        }
+
+        // 更新单词计数
+        function updateWordCounts() {
+            const total = words.length;
+            let mastered = 0;
+            let learning = 0;
+            let newWords = 0;
+            
+            words.forEach(word => {
+                const status = learningProgress[word.word] || 'new';
+                if (status === 'mastered') {
+                    mastered++;
+                } else if (status === 'new') {
+                    newWords++;
+                } else {
+                    learning++;
+                }
+            });
+            
+            // 更新计数显示
+            totalCountElement.textContent = total;
+            masteredCountElement.textContent = mastered;
+            learningCountElement.textContent = learning;
+            newCountElement.textContent = newWords;
+            
+            // 更新模态框计数
+            countAllElement.textContent = total;
+            countNewElement.textContent = newWords;
+            countLearningModalElement.textContent = learning;
+            countMasteredModalElement.textContent = mastered;
+        }
+
+        // 更新学习进度
+        function updateProgress() {
+            const total = words.length;
+            let learned = 0;
+            
+            words.forEach(word => {
+                const status = learningProgress[word.word];
+                if (status && status !== 'new') {
+                    learned++;
+                }
+            });
+            
+            const percent = Math.round((learned / total) * 100);
+            progressFillElement.style.width = `${percent}%`;
+            progressPercentElement.textContent = percent;
+        }
+
+        // 显示单词列表
+        function showWordList() {
+            updateWordList();
+            wordListModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 隐藏单词列表
+        function hideWordList() {
+            wordListModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // 更新单词列表
+        function updateWordList(filter = 'all') {
+            wordListBody.innerHTML = '';
+            
+            words.forEach((word, index) => {
+                const status = learningProgress[word.word] || 'new';
+                
+                // 应用过滤
+                if (filter === 'all' || 
+                    (filter === 'new' && status === 'new') ||
+                    (filter === 'learning' && status !== 'new' && status !== 'mastered') ||
+                    (filter === 'mastered' && status === 'mastered')) {
+                    
+                    const row = document.createElement('tr');
+                    
+                    // 状态徽章
+                    let statusBadge = '';
+                    let statusClass = '';
+                    if (status === 'mastered') {
+                        statusBadge = '已掌握';
+                        statusClass = 'status-mastered';
+                    } else if (status === 'new') {
+                        statusBadge = '未学习';
+                        statusClass = 'status-new';
+                    } else {
+                        statusBadge = '学习中';
+                        statusClass = 'status-learning';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${word.word}</td>
+                        <td>${word.kana}</td>
+                        <td>${word.partOfSpeech}</td>
+                        <td>${word.meaning}</td>
+                        <td><span class="status-badge ${statusClass}">${statusBadge}</span></td>
+                        <td>
+                            <button class="list-action-btn" onclick="jumpToWord(${index})">跳转</button>
+                        </td>
+                    `;
+                    
+                    wordListBody.appendChild(row);
+                }
+            });
+        }
+
+        // 过滤单词列表
+        function filterWordList(filter) {
+            updateWordList(filter);
+        }
+
+        // 跳转到指定单词
+        function jumpToWord(index) {
+            currentIndex = index;
+            updateCard();
+            hideWordList();
+        }
+
+        // 使函数在全局可用
+        window.jumpToWord = jumpToWord;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
