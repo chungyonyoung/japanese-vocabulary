@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>日语核心词汇 </title>
+    <style>
+        :root {
+            /* 莫兰迪配色 */
+            --bg-color: #F0F2F5;
+            --card-bg: #FFFFFF;
+            --text-main: #5C5C5C;
+            --text-sub: #999999;
+            
+            /* 状态色 */
+            --color-forget: #E6A0A0;
+            --color-blurry: #E6D0A0;
+            --color-remember: #A0CFA0;
+            
+            --accent-blue: #94A7AE;
+            --shadow: 0 10px 30px rgba(0,0,0,0.06);
+            --btn-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 顶部导航 */
+        header {
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            flex-shrink: 0;
+            background-color: var(--bg-color);
+            z-index: 10;
+        }
+
+        /* 按钮组容器 */
+        .header-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* 进度条 */
+        .progress-wrapper {
+            flex: 1;
+            margin: 0 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .progress-text {
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            margin-bottom: 3px;
+            text-align: center;
+        }
+        .progress-track {
+            height: 6px;
+            background-color: #E0E0E0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--color-remember);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-icon {
+            background: white;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            color: var(--text-main);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn-icon:active { transform: scale(0.9); }
+
+        /* 主体区域 */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            padding: 15px;
+            position: relative;
+        }
+
+        /* 卡片容器 */
+        .card-container {
+            width: 100%;
+            max-width: 360px;
+            aspect-ratio: 3/4.6; 
+            max-height: 560px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            cursor: pointer;
+        }
+        .card-container.flipped { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            justify-content: flex-start;
+            padding-top: 35px;
+            background: linear-gradient(to bottom right, #fff, #fafafa);
+        }
+
+        /* 内容样式 */
+        .tag-theme {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            background: rgba(148, 167, 174, 0.15);
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .front-kanji {
+            font-size: 3.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 20px 0;
+            font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+        }
+        
+        .click-hint {
+            position: absolute;
+            bottom: 30px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            opacity: 0.7;
+        }
+
+        /* 背面详情 */
+        .back-kana {
+            font-size: 2.4rem;
+            color: var(--color-forget);
+            font-weight: bold;
+            font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            margin-bottom: 8px;
+            margin-top: 5px;
+        }
+        
+        .info-grid {
+            width: 100%;
+            background: #F8F9FA;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dashed #E0E0E0;
+            font-size: 0.95rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .label { color: var(--text-sub); font-size: 0.85rem; align-self: center; }
+        .val { font-weight: 500; text-align: right; }
+
+        /* 助记提示框 */
+        .tip-box {
+            width: 100%;
+            background-color: rgba(160, 207, 160, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: auto;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .tip-title {
+            font-size: 0.75rem;
+            color: #6B8E6B;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .tip-content {
+            font-size: 0.9rem;
+            color: #5C7A5C;
+            line-height: 1.4;
+        }
+
+        /* 底部控制栏 */
+        .controls {
+            padding: 0 20px 30px;
+            height: auto;
+            min-height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .btn-show {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px;
+            background-color: var(--text-main);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            box-shadow: var(--btn-shadow);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn-show:active { transform: scale(0.98); }
+
+        .grade-actions {
+            display: none;
+            width: 100%;
+            max-width: 360px;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .btn-grade {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: var(--btn-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+        .btn-grade:active { transform: scale(0.95); }
+        .btn-grade span { font-size: 0.75rem; opacity: 0.9; font-weight: normal; margin-top: 2px;}
+
+        .btn-forget { background-color: var(--color-forget); }
+        .btn-blurry { background-color: var(--color-blurry); color: #5C4F30; }
+        .btn-remember { background-color: var(--color-remember); }
+
+        .finished-state {
+            text-align: center;
+            display: none;
+        }
+        .finished-icon { font-size: 4rem; margin-bottom: 20px; display: block;}
+
+        /* 列表弹窗 */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.98);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            animation: fadeIn 0.2s;
+        }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;}
+        .word-list { flex: 1; overflow-y: auto; padding: 0 20px 40px; -webkit-overflow-scrolling: touch; }
+        .list-item { padding: 15px 0; border-bottom: 1px solid #f5f5f5; display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 0.95rem; }
+        .list-kanji { font-weight: bold; font-family: "Hiragino Sans", sans-serif;}
+        .list-kana { color: var(--color-forget); font-family: "Hiragino Sans", sans-serif;}
+        .list-mean { text-align: right; color: var(--text-sub); }
+
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-group">
+            <button class="btn-icon" onclick="toggleMode()" id="modeBtn" title="切换模式">📂</button>
+            <button class="btn-icon" onclick="resetProgress()" title="重置进度" style="color: var(--color-forget);">↻</button>
+        </div>
+        
+        <div class="progress-wrapper">
+            <div class="progress-text" id="progressText">已掌握 0 / 100</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="header-group">
+            <button class="btn-icon" onclick="undo()" title="撤销上一步">↩</button>
+            <button class="btn-icon" onclick="toggleList()">☰</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="finished-state" id="finishScreen">
+            <span class="finished-icon">🎉</span>
+            <h2>恭喜！全部完成</h2>
+            <p style="color:var(--text-sub)">所有单词都已加入“记住”列表。</p>
+            <button class="btn-show" onclick="resetProgress()" style="margin-top:30px; background: var(--accent-blue);">重新开始</button>
+        </div>
+
+        <div class="card-container" id="card" onclick="flipCard()">
+            <div class="card-face">
+                <div class="tag-theme" id="cardTheme">主题</div>
+                <div class="front-kanji" id="cardKanji"></div>
+                <div class="click-hint">点击显示答案</div>
+            </div>
+            <div class="card-face card-back">
+                <div class="back-kana" id="cardKana"></div>
+                
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="label">意思</span>
+                        <span class="val" id="cardMeaning"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">词性</span>
+                        <span class="val" id="cardPos"></span>
+                    </div>
+                </div>
+
+                <div class="tip-box">
+                    <span class="tip-title">💡 记忆锦囊</span>
+                    <span class="tip-content" id="cardTip"></span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="controls">
+        <button class="btn-show" id="showBtn" onclick="flipCard()">查看答案</button>
+        
+        <div class="grade-actions" id="gradeBtns">
+            <button class="btn-grade btn-forget" onclick="handleGrade('forget', event)">
+                忘记<span>(3张后)</span>
+            </button>
+            <button class="btn-grade btn-blurry" onclick="handleGrade('blurry', event)">
+                模糊<span>(稍后)</span>
+            </button>
+            <button class="btn-grade btn-remember" onclick="handleGrade('remember', event)">
+                记住<span>(完成)</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="modal" id="listModal">
+        <div class="modal-header">
+            <h3>单词一览</h3>
+            <button class="btn-icon" onclick="toggleList()">×</button>
+        </div>
+        <div class="word-list" id="wordListContainer"></div>
+    </div>
+
+    <script>
+        // 包含助记的完整数据
+        const rawData = `人际与身份,ちゅうごく,中国,名,中国,皮卡丘(Chu)和悟空(Goku)都在中国。
+人际与身份,にほん,日本,专,日本,泥(Ni)土是红(Hon)色的日本。
+人际与身份,がいこく,外国,名,外国,该(Gai)去国外看看(Koku)。
+人际与身份,せかい,世界,名,世界,色彩(Se)斑斓的世界，大开(Kai)眼界。
+人际与身份,くに,国,名,国，国家,国家建设在苦泥(Kuni)之上。
+人际与身份,ひと,人,名,人,那个人回头(Hito)看我。
+人际与身份,おとこ,男,名,男,傲(O)头(To)骨(Ko)是男子汉。
+人际与身份,おんな,女,名,女,噢(O)那(Nna)是美女。
+人际与身份,じょせい,女性,名,女性,救世(Josei)主是女性。
+人际与身份,がくせい,学生,名,（大）学生,搞(Ga)苦涩(Kusei)的学习。
+人际与身份,せんせい,先生,名,老师,先生(Sen)说(Sei)得对。
+人际与身份,かいしゃいん,会社員,名,公司职员,开(Kai)下一(Shai)个嗯(In)长的会。
+人际与身份,ともだち,友達,名,朋友,偷(To)摸(Mo)打(Da)起(Chi)来是损友。
+人际与身份,にんき,人気,名,声望，受欢迎,人气很高，您(Nin)客(Ki)气了。
+人际与身份,ゆうめい,有名,形2,有名,友(Yuu)美(Mei)很有名。
+家庭成员,かぞく,家族,名,家人，家属,靠(Ka)族(Zoku)人生活。
+家庭成员,りょうしん,両親,名,父母，双亲,良(Ryou)心(Shin)父母。
+家庭成员,ちち,父,名,（我）父亲,七七(Chichi)事变，父亲参军。
+家庭成员,はは,母,名,（我）母亲,母亲哈哈(Haha)大笑。
+家庭成员,きょうだい,兄弟,名,兄弟姐妹,巨大(Kyodai)的兄弟情。
+家庭成员,あに,兄,名,哥哥，兄长,阿你(Ani)是我哥。
+家庭成员,おとうと,弟,名,弟弟,欧(O)透(Tou)透(To)的弟弟（很机灵）。
+家庭成员,いもうと,妹,名,妹妹,姨(I)某(Mou)偷(To)看妹妹。
+学习与工作,だいがく,大学,名,大学,待(Dai)家(Ga)苦(Ku)读考大学。
+学习与工作,がっこう,学校,名,学校,该(Ga)考(Kou)试了去学校。
+学习与工作,きょうしつ,教室,名,教室,教(Kyou)室(Shitsu)里有教习。
+学习与工作,べんきょうします,勉強～,动3,学习,变(Ben)强(Kyou)就要学习。
+学习与工作,しゅくだい,宿題,名,作业,宿(Shuku)题(Dai)像住宿费一样必交。
+学习与工作,しけん,試験,名,考试,喜(Shi)看(Ken)考试结果。
+学习与工作,もんだい,問題,名,问题,没(Mon)呆(Dai)住，出了问题。
+学习与工作,しごと,仕事,名,工作,吸(Shi)过(Go)头(To)了，工作太累。
+学习与工作,しゅっちょう,出張,名,出差,输(Shu)出(Chou)去出差。
+学习与工作,じゅうしょ,住所,名,住址,住(Juu)所(Sho) - 音读接近。
+学习与工作,じしょ,辞書,名,词典,记(Ji)手(Sho)里的字典。
+学习与工作,かみ,紙,名,纸,卡(Ka)密(Mi)写在纸上。
+学习与工作,えいご,英语,名,英语,A(Ei) go! 英语冲！
+生活与随身物品,へや,部屋,名,房间，屋子,黑(He)压(Ya)压的房间。
+生活与随身物品,にわ,庭,名,院子,泥(Ni)娃(Wa)在院子里玩。
+生活与随身物品,かべ,壁,名,墙壁,卡(Ka)呗(Be)，卡在墙缝里。
+生活与随身物品,まど,窓,名,窗，窗户,妈(Ma)多(Do)次擦窗户。
+生活与随身物品,でんき,電気,名,电，电力,电(Den)气(Ki) - 音读。
+生活与随身物品,おふろ,お風呂,名,澡堂，浴室,噢(O)不(Fu)啰(Ro)，不想洗澡。
+生活与随身物品,ほん,本,名,书,红(Hon)宝书。
+生活与随身物品,しんぶん,新聞,名,报纸,新(Shin)闻(Bun) - 音读。
+生活与随身物品,ざっし,雑誌,名,杂志,杂(Zas)志(Shi) - 音读。
+生活与随身物品,てがみ,手紙,名,信,手(Te)写的纸(Gami)就是信。
+生活与随身物品,きって,切手,名,邮票,切(Kit)手(Te)，把邮票切下来贴手上。
+生活与随身物品,でんわ,電話,名,电话,电(Den)话(Wa) - 音读。
+生活与随身物品,とけい,時計,名,钟，表,偷(To)K(Kei)时间看表。
+生活与随身物品,しゃしん,写真,名,照片,写(Sha)真(Shin) - 音读。
+生活与随身物品,はこ,箱,名,盒子，箱子,哈(Ha)口(Ko)，箱子开口了。
+生活与随身物品,ふく,服,名,衣服,福(Fu)库(Ku)，衣服是福库。
+生活与随身物品,くつ,靴,名,鞋,裤(Ku)子(Tsu)配鞋子。
+生活与随身物品,さいふ,財布,名,钱包,才(Sai)富(Fu)，钱包里有财富。
+生活与随身物品,おかね,お金,名,钱，金钱,噢(O)卡(Ka)内(Ne)衣里藏钱。
+生活与随身物品,にもつ,荷物,名,包裹,泥(Ni)谋(Mo)刺(Tsu)，行李里藏了东西。
+饮食与休息,しょくどう,食堂,名,食堂,食(Shoku)堂(Dou) - 音读。
+饮食与休息,りょうり,料理,名,菜肴，饭菜,料(Ryou)理(Ri) - 音读。
+饮食与休息,にく,肉,名,肉,尼(Ni)姑(Ku)不吃肉。
+饮食与休息,やさい,野菜,名,蔬菜,压(Ya)菜(Sai)，把野菜压实了。
+饮食与休息,ひるごはん,昼ご飯,名,午饭,昼(Hiru-白天) + 饭(Gohan)。
+饮食与休息,おべんとう,お弁当,名,盒饭,便(Ben)当(Tou) - 音读。
+饮食与休息,みず,水,名,水，凉水,蜜(Mi)汁(Zu)水。
+饮食与休息,やすみ,休み,名,休息,雅(Ya)思(Su)迷(Mi)，考完休息。
+城市、交通与旅游,まち,町,名,城市，街道,妈(Ma)去(Chi)逛街。
+城市、交通与旅游,ぎんこう,銀行,名,银行,银(Gin)行(Kou) - 音读。
+城市、交通与旅游,びょういん,病院,名,医院,病(Byou)院(In) - 音读。
+城市、交通与旅游,こうえん,公園,名,公园,公(Kou)园(En) - 音读。
+城市、交通与旅游,えき,駅,名,车站,唉(E)气(Ki)，车站人多叹气。
+城市、交通与旅游,たてもの,建物,名,大楼，建筑物,站(Ta)手(Te)物(Mono) -> 站立的物体。
+城市、交通与旅游,はし,桥,名,桥，桥梁,哈(Ha)吸(Shi)，桥上深呼吸。
+城市、交通与旅游,ばしょ,場所,名,所在地，场所,霸(Ba)首(Sho)，占据场所。
+城市、交通与旅游,みち,道,名,路，道路,迷(Mi)气(Chi)，迷路了。
+城市、交通与旅游,ちず,地図,名,地图,去(Chi)族(Zu)，带地图去旅游。
+城市、交通与旅游,くるま,車,名,车,骷(Ku)髅(Ru)马(Ma)，幽灵车。
+城市、交通与旅游,じてんしゃ,自転車,名,自行车,自(Ji)转(Ten)车(Sha) - 音读。
+城市、交通与旅游,ちかてつ,地下鉄,名,地铁,地(Chi)下(Ka)铁(Tetsu) - 音读。
+城市、交通与旅游,でんしゃ,電車,名,电车,电(Den)车(Sha) - 音读。
+城市、交通与旅游,ひこうき,飛行機,名,飞机,飞(Hi)行(Kou)机(Ki) - 音读。
+城市、交通与旅游,りょこう,旅行,名,旅行,旅(Ryo)行(Kou) - 音读。
+城市、交通与旅游,さんぽします,散歩～,动3,散步,散(San)步(Po) - 音读。
+自然与时间,てんき,天気,名,天气,天(Ten)气(Ki) - 音读。
+自然与时间,あめ,雨,名,雨，下雨,阿(A)妹(Me)喜欢雨。
+自然与时间,ゆき,雪,名,雪,有(Yu)琪(Ki)在雪地。
+自然与时间,うみ,海,名,大海,污(U)迷(Mi)，大海不污很迷人。
+自然与时间,やま,山,名,山,亚(Ya)马(Ma)逊山。
+自然与时间,はな,花,名,花,哈(Ha)娜(Na)是朵花。
+自然与时间,みどり,緑,名,绿，绿色,绿(Mi)多(Do)里(Ri)，绿意盎然。
+自然与时间,きせつ,季節,名,季节,季(Ki)节(Setsu) - 音读。
+自然与时间,はる,春,名,春天，春季,哈(Ha)路(Ru)，春天上路。
+自然与时间,ふゆ,冬,名,冬天，冬季,腐(Fu)鱼(Yu)，冬天做咸鱼。
+自然与时间,なつやすみ,夏休み,名,暑假,夏(Natsu) + 休息(Yasumi)。
+自然与时间,いま,今,名,现在,姨(I)妈(Ma)现在来了。
+自然与时间,あさ,朝,名,早晨,阿(A)萨(Sa)姆奶茶，早晨喝。
+自然与时间,ひる,昼,名,白天，中午,喜(Hi)路(Ru)，白天赶路。
+自然与时间,きょう,今日,名,今天,抠(Kyou)门，今天不请客。
+自然与时间,へいじつ,平日,名,平日，非休息日,平(Hei)日(Jitsu) - 音读。
+自然与时间,すいようび,水曜日,名,星期三,水(Sui)曜日。
+自然与时间,もくようび,木曜日,名,星期四,木(Moku)曜日。
+自然与时间,たんじょうび,誕生日,名,生日,诞(Tan)生(Jou)日(Bi) - 音读。
+健康与身体,あたま,頭,名,头，头脑,阿(A)他(Ta)妈(Ma)打头。
+健康与身体,かお,顔,名,脸，颜面,靠(Kao)，看脸。
+健康与身体,め,目,名,眼，眼睛,美(Me)目。
+健康与身体,はな,鼻,名,鼻，鼻子,哈(Ha)娜(Na)鼻子挺。
+健康与身体,かみ,髪,名,头发,卡(Ka)迷(Mi)，头发迷人。
+健康与身体,あし,足,名,脚,阿(A)洗(Shi)脚。
+健康与身体,ゆび,指,名,手指，指头,有(Yu)必(Bi)要用手指。
+健康与身体,かぜ,風邪,名,感冒,卡(Ka)则(Ze)，感冒嗓子卡着了。
+健康与身体,ねつ,熱,名,发烧，体温,热(Netsu)死(Su)了。
+健康与身体,くすり,薬,名,药,苦(Ku)死(Su)里(Ri)，药苦死人。
+健康与身体,きもち,気持ち,名,心情,气(Ki)持(Mo)去(Chi)，心情保持下去。
+评价与状态,じょうず,上手,形2,擅长，水平高,上(Jou)手(Zu) - 音读。
+评价与状态,へた,下手,形2,不高明，水平低,黑(He)塔(Ta)，笨手笨脚。
+评价与状态,にがて,苦手,形2,不擅长，不善于,你(Ni)尬(Ga)特(Te)，你尴尬特别不行。
+评价与状态,しんせつ,親切,形2,热情,亲(Shin)切(Setsu) - 音读。
+评价与状态,かんたん,簡単,形2,简单,简(Kan)单(Tan) - 音读。
+评价与状态,だいじょうぶ,大丈夫,形2,没关系，放心,大(Dai)丈(Jou)夫(Bu) - 音读。
+评价与状态,たいせつ,大切,形2,重要，珍贵,太(Tai)切(Setsu)身重要。
+评价与状态,はで,派手,形2,耀眼，花哨,哈(Ha)嗲(De)，穿得好嗲好花哨。
+娱乐与方位,おんがく,音楽,名,音乐,音(On)乐(Gaku) - 音读。
+娱乐与方位,えいが,映画,名,电影,A(Ei)咖(Ga)演电影。
+娱乐与方位,うた,歌,名,歌，歌曲,唔(U)踏(Ta)，边唱边踏步。
+娱乐与方位,みぎ,右,名,右，右边,米(Mi)奇(Gi)用右手。
+娱乐与方位,ひだり,左,名,左，左边,希(Hi)达(Da)里(Ri)，左边到达。
+娱乐与方位,よこ,横,名,旁边，侧面,优(Yo)口(Ko)，侧面优美的口。
+娱乐与方位,せいかつ,生活,名,生活,生(Sei)活(Katsu) - 音读。
+动物与自然,ねこ,猫,名,猫,乃(Ne)口(Ko)，猫奶一口。
+动物与自然,いぬ,犬,名,狗,姨(I)奴(Nu)，当狗奴。`;
+
+        // 数据解析
+        const vocabulary = rawData.trim().split('\n').map((line, index) => {
+            const parts = line.split(',');
+            if (parts.length >= 6) {
+                return {
+                    id: index,
+                    theme: parts[0],
+                    kana: parts[1],
+                    kanji: parts[2],
+                    pos: parts[3],
+                    mean: parts[4],
+                    tip: parts[5] 
+                };
+            }
+        }).filter(item => item !== undefined);
+
+        // --- 应用状态 ---
+        let studyQueue = [];  
+        let masteredCount = 0;
+        let totalWords = vocabulary.length;
+        let isFlipped = false;
+        let isShuffled = false;
+        let historyStack = []; 
+
+        const cardEl = document.getElementById('card');
+        const showBtn = document.getElementById('showBtn');
+        const gradeBtns = document.getElementById('gradeBtns');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const finishScreen = document.getElementById('finishScreen');
+        const modeBtn = document.getElementById('modeBtn');
+
+        function init() {
+            studyQueue = [...vocabulary];
+            masteredCount = 0;
+            updateProgress();
+            renderCard();
+            generateList();
+        }
+
+        function renderCard() {
+            if (studyQueue.length === 0) {
+                cardEl.style.display = 'none';
+                document.querySelector('.controls').style.display = 'none';
+                finishScreen.style.display = 'block';
+                return;
+            } else {
+                cardEl.style.display = 'block';
+                document.querySelector('.controls').style.display = 'flex';
+                finishScreen.style.display = 'none';
+            }
+
+            const word = studyQueue[0];
+            
+            isFlipped = false;
+            cardEl.classList.remove('flipped');
+            showBtn.style.display = 'block';
+            gradeBtns.style.display = 'none';
+
+            document.getElementById('cardTheme').textContent = word.theme;
+            document.getElementById('cardKanji').textContent = word.kanji;
+            
+            setTimeout(() => {
+                document.getElementById('cardKana').textContent = word.kana;
+                document.getElementById('cardMeaning').textContent = word.mean;
+                document.getElementById('cardPos').textContent = word.pos;
+                document.getElementById('cardTip').textContent = word.tip;
+            }, 150);
+        }
+
+        function flipCard() {
+            if (isFlipped) return;
+            isFlipped = true;
+            cardEl.classList.add('flipped');
+            showBtn.style.display = 'none';
+            gradeBtns.style.display = 'flex';
+        }
+
+        function handleGrade(grade, event) {
+            if (event) event.stopPropagation();
+            
+            const currentCard = studyQueue.shift();
+            historyStack.push({
+                card: currentCard,
+                grade: grade,
+                queueSnapshot: [...studyQueue] 
+            });
+            if (historyStack.length > 5) historyStack.shift(); 
+
+            if (grade === 'remember') {
+                masteredCount++;
+            } else if (grade === 'blurry') {
+                studyQueue.push(currentCard);
+            } else if (grade === 'forget') {
+                let insertIndex = Math.min(studyQueue.length, 3);
+                studyQueue.splice(insertIndex, 0, currentCard);
+            }
+
+            updateProgress();
+            renderCard();
+        }
+
+        function undo() {
+            if (historyStack.length === 0) {
+                alert("没有可撤销的操作");
+                return;
+            }
+            const lastAction = historyStack.pop();
+            
+            if (lastAction.grade === 'remember') {
+                masteredCount--;
+            }
+            
+            if (lastAction.grade !== 'remember') {
+                const card = lastAction.card;
+                const idx = studyQueue.indexOf(card);
+                if (idx > -1) studyQueue.splice(idx, 1);
+            }
+            
+            studyQueue.unshift(lastAction.card);
+            
+            updateProgress();
+            renderCard();
+        }
+
+        function updateProgress() {
+            progressText.textContent = `已掌握 ${masteredCount} / ${totalWords}`;
+            const percent = (masteredCount / totalWords) * 100;
+            progressBar.style.width = `${percent}%`;
+        }
+
+        function toggleMode() {
+            if(studyQueue.length < 2) return;
+            const confirmChange = confirm("切换模式将重置当前未掌握单词的顺序，确定吗？");
+            if (!confirmChange) return;
+
+            isShuffled = !isShuffled;
+            modeBtn.textContent = isShuffled ? "🎲" : "📂";
+            
+            const current = studyQueue.shift();
+            if (isShuffled) {
+                studyQueue = shuffleArray(studyQueue);
+            } else {
+                studyQueue.sort((a, b) => a.id - b.id);
+            }
+            studyQueue.unshift(current);
+            renderCard();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 重置进度功能
+        function resetProgress() {
+            if(confirm("⚠️ 确定要清空所有进度并从头开始吗？")) {
+                // 重置所有状态
+                isShuffled = false;
+                modeBtn.textContent = "📂";
+                historyStack = [];
+                init();
+            }
+        }
+
+        function toggleList() {
+            const modal = document.getElementById('listModal');
+            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function generateList() {
+            const container = document.getElementById('wordListContainer');
+            let html = '';
+            vocabulary.forEach(word => {
+                html += `
+                    <div class="list-item">
+                        <span class="list-kanji">${word.kanji}</span>
+                        <span class="list-kana">${word.kana}</span>
+                        <span class="list-mean">${word.mean}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        init();
+    </script>
+</body>
+</html>
